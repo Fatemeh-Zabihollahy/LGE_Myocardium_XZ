@@ -1,5 +1,5 @@
 
-#%%
+#%% Import required libraries 
 import numpy
 from PIL import Image
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
@@ -22,7 +22,7 @@ LGEs = glob.glob(path1 + "/*")
 path2 = r'Please enter the path where the myocardium masks in .nii format are located.'
 MYOs = glob.glob(path2 + "/*")
 
-#%%
+#%% Prepare training samples
 
 x_unet = 256
 y_unet = 256
@@ -84,7 +84,7 @@ for n in range(18):
 data_train = numpy.delete(data_train, (0), axis=0) 
 mask_train = numpy.delete(mask_train, (0), axis=0) 
 
-#% reshape training dataset
+#% Reshape training dataset
 data_train = data_train.reshape(data_train.shape[0], x_unet, y_unet, 1)
 mask_train = mask_train.reshape(mask_train.shape[0], x_unet, y_unet, 1)
 
@@ -106,27 +106,27 @@ def dice_coef_loss(y_true, y_pred):
 filter_no = 32
 
 inputs = Input((x_unet, y_unet, 1))
-#s = Lambda(lambda x: x / 255) (inputs)
+
 
 conv1 = Conv2D(filter_no, 3,  strides=(1, 1), activation = 'relu', padding = 'same')(inputs)
 conv1 = BatchNormalization()(conv1)
 conv1 = Conv2D(filter_no, 3,  strides=(1, 1), activation = 'relu', padding = 'same')(conv1)
 conv1 = BatchNormalization()(conv1)
-#conv1 = Dropout(0.5)(conv1)
+
 
 pool1 = MaxPooling2D(pool_size=(2, 2), strides=(2, 2))(conv1)
 conv2 = Conv2D(filter_no*2, 3,  strides=(1, 1), activation = 'relu', padding = 'same')(pool1)
 conv2 = BatchNormalization()(conv2)
 conv2 = Conv2D(filter_no*2, 3,  strides=(1, 1), activation = 'relu', padding = 'same')(conv2)
 conv2 = BatchNormalization()(conv2)
-#conv2 = Dropout(0.5)(conv2)
+
 
 pool2 = MaxPooling2D(pool_size=(2, 2), strides=(2, 2))(conv2)
 conv3 = Conv2D(filter_no*4, 3,  strides=(1, 1), activation = 'relu', padding = 'same')(pool2)
 conv3 = BatchNormalization()(conv3)
 conv3 = Conv2D(filter_no*4, 3,  strides=(1, 1), activation = 'relu', padding = 'same')(conv3)
 conv3 = BatchNormalization()(conv3)
-#conv3 = Dropout(0.5)(conv3)
+
 
 pool3 = MaxPooling2D(pool_size=(2, 2), strides=(2, 2))(conv3)
 conv4 = Conv2D(filter_no*8, 3,  strides=(1, 1), activation = 'relu', padding = 'same')(pool3)
@@ -140,43 +140,38 @@ conv5 = Conv2D(filter_no*16, 3,  strides=(1, 1), activation = 'relu', padding = 
 conv5 = BatchNormalization()(conv5)
 conv5 = Conv2D(filter_no*16, 3,  strides=(1, 1), activation = 'relu', padding = 'same')(conv5)
 conv5 = BatchNormalization()(conv5)
-#conv5 = Dropout(0.5)(conv5)
+
 
 up1 = UpSampling2D(size = (2,2))(conv5)
-#conv4 = Cropping2D(cropping=((1, 0), (1, 0)))(conv4)
 merge1 = concatenate([conv4,up1], axis = 3)
 conv6 = Conv2D(filter_no*8, 3,  strides=(1, 1), activation = 'relu', padding = 'same')(merge1)
 conv6 = BatchNormalization()(conv6)
 conv6 = Conv2D(filter_no*8, 3,  strides=(1, 1), activation = 'relu', padding = 'same')(conv6)
 conv6 = BatchNormalization()(conv6)
-#conv6 = Dropout(0.5)(conv6)
+
 
 up2 = UpSampling2D(size = (2,2))(conv6)
-#conv3 = Cropping2D(cropping=((1, 1), (1, 1)))(conv3)
 merge2 = concatenate([conv3,up2], axis = 3)
 conv7 = Conv2D(filter_no*4, 3,  strides=(1, 1), activation = 'relu', padding = 'same')(merge2)
 conv7 = BatchNormalization()(conv7)
 conv7 = Conv2D(filter_no*4, 3,  strides=(1, 1), activation = 'relu', padding = 'same')(conv7)
 conv7 = BatchNormalization()(conv7)
-#conv7 = Dropout(0.5)(conv7)
+
 
 up3 = UpSampling2D(size = (2,2))(conv7)
-#conv2 = Cropping2D(cropping=((2, 2), (2, 2)))(conv2)
 merge3 = concatenate([conv2,up3], axis = 3)
 conv8 = Conv2D(filter_no*2, 3,  strides=(1, 1), activation = 'relu', padding = 'same')(merge3)
 conv8 = BatchNormalization()(conv8)
 conv8 = Conv2D(filter_no*2, 3,  strides=(1, 1), activation = 'relu', padding = 'same')(conv8)
 conv8 = BatchNormalization()(conv8)
-#conv8 = Dropout(0.5)(conv8)
+
 
 up4 = UpSampling2D(size = (2,2))(conv8)
-#up4 = ZeroPadding2D(padding=((4, 4), (4, 4)))(up4)
 merge4 = concatenate([conv1,up4], axis = 3)
 conv9 = Conv2D(filter_no, 3,  strides=(1, 1), activation = 'relu', padding = 'same')(merge4)
 conv9 = BatchNormalization()(conv9)
 conv9 = Conv2D(filter_no, 3,  strides=(1, 1), activation = 'relu', padding = 'same')(conv9)
 conv9 = BatchNormalization()(conv9)
-#conv9 = Dropout(0.5)(conv9)
 conv9 = Conv2D(2, 3, strides=(1, 1), activation = 'relu', padding = 'same')(conv9)
 conv9 = Conv2D(1, 1, activation = 'sigmoid')(conv9)
 
@@ -186,7 +181,7 @@ model.compile(optimizer='adadelta', loss=dice_coef_loss, metrics=[dice_coef])
 model.summary()
 
 
-#%% Train Model
+#%% Train Model and save the best trained one
 fname= "segment_myo_xz1.hdf5"
 checkpointer = ModelCheckpoint(fname, verbose=1, save_best_only=True)
 results = model.fit(data_train, mask_train, validation_split=0.2, shuffle=True, batch_size=10, epochs=70, callbacks=[checkpointer])		
@@ -268,7 +263,7 @@ def model_evaluate(data,mask):
     return(dsc,acc,prec,rec)
 
 
-#%% Create test dataset including test images and their corresponding masks
+#%% Create test dataset and test unseen images
 
 x_unet = 256
 y_unet = 256
