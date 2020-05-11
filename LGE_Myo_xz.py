@@ -1,44 +1,18 @@
-'''
-Created on Thu Oct 25 08:55:54 2018
 
-Author: Fatemeh Zabihollahy
-'''
 #%%
 import numpy
 from PIL import Image
-from numpy import *
-import math
-import sklearn
-from sklearn.utils import shuffle
-from sklearn.cross_validation import train_test_split
-from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
-from sklearn.mixture import GaussianMixture
 import scipy
-from scipy.ndimage.interpolation import zoom
-from skimage.measure import block_reduce
-import skimage
 from skimage import morphology
-from skimage.morphology import erosion
 from keras.models import Model, load_model
-from keras.layers import Input
-from keras.layers.core import Lambda
-from keras.layers.convolutional import Conv2D, Conv2DTranspose, UpSampling2D
-from keras.layers.core import Dense, Dropout, Activation, Flatten
-from keras.layers.pooling import MaxPooling2D
 from keras.layers.merge import concatenate
-from keras.callbacks import EarlyStopping, ModelCheckpoint
-#from keras import backend as K
-from keras.models import *
-from keras.layers import Input, merge, Conv2D, MaxPooling2D, UpSampling2D, Dropout, Cropping2D, ZeroPadding2D
+from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, Dropout
 from keras.layers.normalization import BatchNormalization
-from keras.optimizers import *
-from keras.optimizers import Adam
-from keras.callbacks import ModelCheckpoint, LearningRateScheduler, EarlyStopping
 import nibabel as nib
-import tensorflow
 import glob
 from matplotlib import pyplot as plt
+
 
 path1 = r'C:\Users\Fatemeh\Desktop\LGE Cardiac MRI\LGE Images nii'
 LGEs = glob.glob(path1 + "/*")
